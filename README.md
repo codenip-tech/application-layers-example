@@ -1,4 +1,4 @@
-# Symfony Base Repository
+# Application Layers Example
 
 This repository contains the basic configuration to run Symfony applications with MySQL database
 
