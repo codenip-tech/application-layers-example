@@ -4,9 +4,9 @@ namespace App\Entity;
 
 use App\Repository\PostRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
-#[ORM\Index(columns: ['creator_id'], name: 'IDX_post_creator')]
 #[ORM\Index(columns: ['title'], name: 'IDX_post_title')]
 class Post
 {
@@ -15,24 +15,23 @@ class Post
     private string $id;
 
     #[ORM\Column(type: 'string', length: 50)]
+    private string $author;
+
+    #[ORM\Column(type: 'string', length: 50)]
     private string $title;
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $content;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
-    #[ORM\JoinColumn(nullable: false)]
-    private User $creator;
-
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdOn;
 
-    public function __construct(string $id, string $title, string $content, User $creator)
+    public function __construct(string $author, string $title, string $content)
     {
-        $this->id = $id;
+        $this->id = Uuid::v4()->toRfc4122();
+        $this->author = $author;
         $this->title = $title;
         $this->content = $content;
-        $this->creator = $creator;
         $this->createdOn = new \DateTime();
     }
 
@@ -41,14 +40,14 @@ class Post
         return $this->id;
     }
 
+    public function author(): string
+    {
+        return $this->author;
+    }
+
     public function title(): string
     {
         return $this->title;
-    }
-
-    public function setTitle(string $title): void
-    {
-        $this->title = $title;
     }
 
     public function content(): string
@@ -61,17 +60,7 @@ class Post
         $this->content = $content;
     }
 
-    public function getCreator(): ?User
-    {
-        return $this->creator;
-    }
-
-    public function setCreator(User $creator): ?User
-    {
-        return $this->creator = $creator;
-    }
-
-    public function getCreatedOn(): ?\DateTimeInterface
+    public function createdOn(): ?\DateTimeInterface
     {
         return $this->createdOn;
     }
@@ -80,9 +69,9 @@ class Post
     {
         return [
             'id' => $this->id,
+            'author' => $this->author,
             'title' => $this->title,
             'content' => $this->content,
-            'creatorId' => $this->creator->id(),
             'createdOn' => $this->createdOn->format(\DateTimeInterface::RFC3339),
         ];
     }

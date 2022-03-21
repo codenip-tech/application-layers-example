@@ -6,14 +6,12 @@ namespace App\Controller\Post;
 
 use App\Entity\Post;
 use App\Repository\PostRepository;
-use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Uid\Uuid;
 
 #[Route('/posts')]
 class PostController extends AbstractController
@@ -23,7 +21,9 @@ class PostController extends AbstractController
     {
         $posts = $postRepository->findAll();
 
-        return $this->json($posts);
+        return $this->json(array_map(function (Post $post): array {
+            return $post->toArray();
+        }, $posts));
     }
 
     #[Route('/{id}', name: 'get_post_by_id', methods: ['GET'])]
@@ -33,11 +33,11 @@ class PostController extends AbstractController
     }
 
     #[Route('', name: 'posts_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
+    public function create(Request $request, EntityManagerInterface $entityManager): Response
     {
         $data = \json_decode($request->getContent());
 
-        if (!isset($data->title) || !isset($data->content) || !isset($data->creator)) {
+        if (!isset($data->author) || !isset($data->title) || !isset($data->content) || !isset($data->creator)) {
             return $this->json([
                 'class' => BadRequestHttpException::class,
                 'code' => Response::HTTP_BAD_REQUEST,
@@ -45,7 +45,7 @@ class PostController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $post = new Post(Uuid::v4()->toRfc4122(), $data->title, $data->content, $userRepository->find($data->creator));
+        $post = new Post($data->author, $data->title, $data->content);
 
         $entityManager->persist($post);
         $entityManager->flush();
