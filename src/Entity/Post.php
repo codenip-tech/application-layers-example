@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\PostRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ORM\Index(columns: ['creator_id'], name: 'IDX_post_creator')]
@@ -28,9 +27,9 @@ class Post
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdOn;
 
-    public function __construct(string $title, string $content, User $creator)
+    public function __construct(string $id, string $title, string $content, User $creator)
     {
-        $this->id = Uuid::v4()->toRfc4122();
+        $this->id = $id;
         $this->title = $title;
         $this->content = $content;
         $this->creator = $creator;
@@ -81,7 +80,8 @@ class Post
     {
         return [
             'id' => $this->id,
-            'title' => $this->content,
+            'title' => $this->title,
+            'content' => $this->content,
             'creatorId' => $this->creator->id(),
             'createdOn' => $this->createdOn->format(\DateTimeInterface::RFC3339),
         ];

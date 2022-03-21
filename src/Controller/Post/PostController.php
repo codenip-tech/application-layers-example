@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Uid\Uuid;
 
 #[Route('/posts')]
 class PostController extends AbstractController
@@ -23,6 +24,12 @@ class PostController extends AbstractController
         $posts = $postRepository->findAll();
 
         return $this->json($posts);
+    }
+
+    #[Route('/{id}', name: 'get_post_by_id', methods: ['GET'])]
+    public function getPostById(Post $post): Response
+    {
+        return $this->json($post->toArray());
     }
 
     #[Route('', name: 'posts_create', methods: ['POST'])]
@@ -38,7 +45,7 @@ class PostController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $post = new Post($data->title, $data->content, $userRepository->find($data->creator));
+        $post = new Post(Uuid::v4()->toRfc4122(), $data->title, $data->content, $userRepository->find($data->creator));
 
         $entityManager->persist($post);
         $entityManager->flush();

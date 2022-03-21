@@ -6,7 +6,6 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'U_user_email', columns: ['email'])]
@@ -25,9 +24,9 @@ class User
     #[ORM\OneToMany(mappedBy: 'creator', targetEntity: Post::class, orphanRemoval: true)]
     private Collection $posts;
 
-    public function __construct(string $email)
+    public function __construct(string $id, string $email)
     {
-        $this->id = Uuid::v4()->toRfc4122();
+        $this->id = $id;
         $this->setEmail($email);
         $this->createdOn = new \DateTime();
         $this->posts = new ArrayCollection();

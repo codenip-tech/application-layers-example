@@ -1,0 +1,5 @@
+App\Entity\User:
+  User-0:
+    __construct:
+      id: '72b1c6b5-967b-4793-8695-f06c8e9e559f'
+      email: 'peter@api.com'

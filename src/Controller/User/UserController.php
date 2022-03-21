@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Uid\Uuid;
 
 #[Route('/users')]
 class UserController extends AbstractController
@@ -40,7 +41,7 @@ class UserController extends AbstractController
         try {
             $data = \json_decode($request->getContent());
 
-            $user = new User($data->email);
+            $user = new User(Uuid::v4()->toRfc4122(), $data->email);
 
             $entityManager->persist($user);
             $entityManager->flush();
