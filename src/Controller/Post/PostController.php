@@ -7,10 +7,12 @@ namespace App\Controller\Post;
 use App\Entity\Post;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
@@ -35,7 +37,7 @@ class PostController extends AbstractController
     }
 
     #[Route('', name: 'posts_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    public function create(Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer, LoggerInterface $logger): Response
     {
         $data = \json_decode($request->getContent());
 
@@ -59,7 +61,11 @@ class PostController extends AbstractController
             ->text('New post created')
             ->html('<p>Post author: ' . $post->author() . '</p>');
 
-        $mailer->send($email);
+        try {
+            $mailer->send($email);
+        } catch (TransportExceptionInterface $e) {
+            $logger->error(\sprintf('Error sending email. Message: %s', $e->getMessage()));
+        }
 
         return $this->json($post->toArray(), Response::HTTP_CREATED);
     }
