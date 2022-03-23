@@ -9,35 +9,41 @@ use App\Exception\Http\BadRequestHttpException;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
-use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/posts')]
-class PostController extends AbstractController
+class PostController
 {
-    #[Route('', name: 'posts_index', methods: ['GET'])]
-    public function index(PostRepository $postRepository): Response
+    public function __construct(
+        private readonly PostRepository $postRepository,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly MailerInterface $mailer,
+        private readonly LoggerInterface $logger
+    )
     {
-        $posts = $postRepository->findAll();
+    }
 
-        return $this->json(array_map(function (Post $post): array {
+    public function index(): Response
+    {
+        $posts = $this->postRepository->findAll();
+
+        return new JsonResponse(array_map(function (Post $post): array {
             return $post->toArray();
         }, $posts));
     }
 
-    #[Route('/{id}', name: 'get_post_by_id', methods: ['GET'])]
-    public function getPostById(Post $post): Response
+    public function getPostById(string $id): Response
     {
-        return $this->json($post->toArray());
+        $post = $this->postRepository->find($id);
+
+        return new JsonResponse($post->toArray());
     }
 
-    #[Route('', name: 'posts_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer, LoggerInterface $logger): Response
+    public function create(Request $request): Response
     {
         $data = \json_decode($request->getContent());
 
@@ -47,8 +53,8 @@ class PostController extends AbstractController
 
         $post = new Post($data->author, $data->title, $data->content);
 
-        $entityManager->persist($post);
-        $entityManager->flush();
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
 
         $email = (new Email())
             ->from('admin@app.com')
@@ -58,11 +64,11 @@ class PostController extends AbstractController
             ->html('<p>Post author: ' . $post->author() . '</p>');
 
         try {
-            $mailer->send($email);
+            $this->mailer->send($email);
         } catch (TransportExceptionInterface $e) {
-            $logger->error(\sprintf('Error sending email. Message: %s', $e->getMessage()));
+            $this->logger->error(\sprintf('Error sending email. Message: %s', $e->getMessage()));
         }
 
-        return $this->json($post->toArray(), Response::HTTP_CREATED);
+        return new JsonResponse($post->toArray(), Response::HTTP_CREATED);
     }
 }

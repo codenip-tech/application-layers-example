@@ -1,3 +1,15 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+post_index:
+  path: /posts
+  controller: App\Controller\Post\PostController::index
+  methods: [ GET ]
+
+get_post_by_id:
+  path: /posts/{id}
+  controller: App\Controller\Post\PostController::getPostById
+  methods: [ GET ]
+
+posts_create:
+  path: /posts
+  controller: App\Controller\Post\PostController::create
+  methods: [ POST ]
+
