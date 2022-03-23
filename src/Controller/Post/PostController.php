@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Controller\Post;
 
 use App\Entity\Post;
+use App\Exception\Http\BadRequestHttpException;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -42,11 +42,7 @@ class PostController extends AbstractController
         $data = \json_decode($request->getContent());
 
         if (!isset($data->author) || !isset($data->title) || !isset($data->content)) {
-            return $this->json([
-                'class' => BadRequestHttpException::class,
-                'code' => Response::HTTP_BAD_REQUEST,
-                'message' => 'Missing required parameters',
-            ], Response::HTTP_BAD_REQUEST);
+            throw BadRequestHttpException::create('Missing required parameters');
         }
 
         $post = new Post($data->author, $data->title, $data->content);
