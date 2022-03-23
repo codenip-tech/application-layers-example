@@ -11,6 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/posts')]
@@ -33,11 +35,11 @@ class PostController extends AbstractController
     }
 
     #[Route('', name: 'posts_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager): Response
+    public function create(Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $data = \json_decode($request->getContent());
 
-        if (!isset($data->author) || !isset($data->title) || !isset($data->content) || !isset($data->creator)) {
+        if (!isset($data->author) || !isset($data->title) || !isset($data->content)) {
             return $this->json([
                 'class' => BadRequestHttpException::class,
                 'code' => Response::HTTP_BAD_REQUEST,
@@ -49,6 +51,15 @@ class PostController extends AbstractController
 
         $entityManager->persist($post);
         $entityManager->flush();
+
+        $email = (new Email())
+            ->from('admin@app.com')
+            ->to('editors@app.com')
+            ->subject('New post!')
+            ->text('New post created')
+            ->html('<p>Post author: ' . $post->author() . '</p>');
+
+        $mailer->send($email);
 
         return $this->json($post->toArray(), Response::HTTP_CREATED);
     }
