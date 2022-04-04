@@ -21,7 +21,6 @@ class PostControllerTest extends WebTestCase
             'author' => 'Peter',
             'title' => 'Title',
             'content' => 'Some text',
-            'creator' => '72b1c6b5-967b-4793-8695-f06c8e9e559f',
         ];
 
         $client = static::createClient();

@@ -2,37 +2,29 @@
 
 namespace App\Entity;
 
-use App\Repository\PostRepository;
-use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity(repositoryClass: PostRepository::class)]
-#[ORM\Index(columns: ['title'], name: 'IDX_post_title')]
 class Post
 {
-    #[ORM\Id]
-    #[ORM\Column(type: 'string', columnDefinition: 'CHAR(36) NOT NULL')]
-    private string $id;
-
-    #[ORM\Column(type: 'string', length: 50)]
-    private string $author;
-
-    #[ORM\Column(type: 'string', length: 50)]
-    private string $title;
-
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $content;
-
-    #[ORM\Column(type: 'datetime')]
-    private \DateTimeInterface $createdOn;
-
-    public function __construct(string $author, string $title, string $content)
+    private function __construct(
+        private readonly string $id,
+        private readonly string $author,
+        private string $title,
+        private string $content,
+        private readonly \DateTimeInterface $createdOn
+    )
     {
-        $this->id = Uuid::v4()->toRfc4122();
-        $this->author = $author;
-        $this->title = $title;
-        $this->content = $content;
-        $this->createdOn = new \DateTime();
+    }
+
+    public static function create(string $author, string $title, string $content): self
+    {
+        return new self(
+            Uuid::v4()->toRfc4122(),
+            $author,
+            $title,
+            $content,
+            new \DateTimeImmutable()
+        );
     }
 
     public function id(): string

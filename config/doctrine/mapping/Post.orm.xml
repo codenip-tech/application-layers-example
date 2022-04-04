@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping">
+    <entity name="App\Entity\Post" table="post">
+        <id name="id" type="string" length="36"/>
+
+        <field name="author" length="50"/>
+        <field name="title" length="50"/>
+        <field name="content" length="255"/>
+        <field name="createdOn" type="datetime_immutable"/>
+
+        <unique-constraints>
+            <unique-constraint columns="title" name="IDX_post_title"/>
+        </unique-constraints>
+    </entity>
+</doctrine-mapping>
