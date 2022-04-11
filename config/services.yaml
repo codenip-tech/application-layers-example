@@ -19,3 +19,6 @@ services:
     App\Listener\JsonTransformerExceptionListener:
         tags:
             - { name: kernel.event_listener, event: kernel.exception, method: onKernelException, priority: 100 }
+
+#    App\Repository\PostRepository:
+#        class: App\Repository\MongoPostRepository
