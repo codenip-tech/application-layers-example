@@ -5,18 +5,15 @@ declare(strict_types=1);
 namespace App\Service\Post;
 
 use App\Entity\Post;
+use App\Messenger\Message\PostCreated;
 use App\Repository\PostRepository;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class PostService
 {
     public function __construct(
         private readonly PostRepository $repository,
-        private readonly MailerInterface $mailer,
-        private readonly LoggerInterface $logger
+        private readonly MessageBusInterface $bus
     )
     {
     }
@@ -37,24 +34,8 @@ class PostService
 
         $this->repository->save($post);
 
-        $this->sendEmail($post->author());
+        $this->bus->dispatch(new PostCreated($post->author()));
 
         return $post;
-    }
-
-    private function sendEmail(string $author): void
-    {
-        $email = (new Email())
-            ->from('admin@app.com')
-            ->to('editors@app.com')
-            ->subject('New post!')
-            ->text('New post created')
-            ->html('<p>Post author: ' . $author . '</p>');
-
-        try {
-            $this->mailer->send($email);
-        } catch (TransportExceptionInterface $e) {
-            $this->logger->error(\sprintf('Error sending email. Message: %s', $e->getMessage()));
-        }
     }
 }
