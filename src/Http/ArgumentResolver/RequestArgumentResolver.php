@@ -21,7 +21,7 @@ class RequestArgumentResolver implements ArgumentValueResolverInterface
     {
     }
 
-    public function supports(Request $request, ArgumentMetadata $argument)
+    public function supports(Request $request, ArgumentMetadata $argument): bool
     {
         $reflectionClass = new \ReflectionClass($argument->getType());
         if ($reflectionClass->implementsInterface(RequestDTO::class)) {
