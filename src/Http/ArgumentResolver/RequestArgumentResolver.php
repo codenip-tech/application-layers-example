@@ -6,6 +6,7 @@ namespace App\Http\ArgumentResolver;
 
 use App\Exception\Http\BadRequestHttpException;
 use App\Http\DTO\RequestDTO;
+use App\Http\HttpClient;
 use App\Http\RequestTransformer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
@@ -16,13 +17,16 @@ class RequestArgumentResolver implements ArgumentValueResolverInterface
 {
     public function __construct(
         private readonly ValidatorInterface $validator,
-        private readonly RequestTransformer $requestTransformer
+        private readonly RequestTransformer $requestTransformer,
+        private readonly HttpClient $client
     )
     {
     }
 
     public function supports(Request $request, ArgumentMetadata $argument): bool
     {
+        $this->client->get('https://asdasd.com');
+
         $reflectionClass = new \ReflectionClass($argument->getType());
         if ($reflectionClass->implementsInterface(RequestDTO::class)) {
             return true;
